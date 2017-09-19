@@ -86,7 +86,7 @@ func main() {
 			//StartTime
 			//EndTime
 
-			_, err = c.Index("ipfix", "flows", nil, nil, dd)
+			_, err = c.Index("ipfix", "flows", randomString(10), nil, dd)
 			fmt.Fprintf(w, dd)
 			exitIfErr(err)
 
