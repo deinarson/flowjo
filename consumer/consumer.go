@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"strconv"
+	"time"
 
 	cluster "github.com/bsm/sarama-cluster"
 )
@@ -51,6 +52,15 @@ type dataField struct {
 type ipfix struct {
 	AgentID  string
 	DataSets [][]dataField
+	Header   flowHeader
+}
+
+type flowHeader struct {
+	Version    int64
+	Length     int64
+	ExportTime int64
+	SequenceNo int64
+	DomainID   int64
 }
 
 type Consumer struct {
@@ -87,7 +97,10 @@ func (c *Consumer) Start() chan *FlowRecord {
 				if more {
 					if err := json.Unmarshal(msg.Value, &objmap); err == nil {
 						for _, data := range objmap.DataSets {
-							rec := &FlowRecord{AgentID: objmap.AgentID}
+							rec := &FlowRecord{
+								AgentID:    objmap.AgentID,
+								ExportTime: time.Unix(objmap.Header.ExportTime, 0),
+							}
 							for _, dd := range data {
 								switch dd.I {
 								case IPFIXFieldOctetDelta:
@@ -128,8 +141,9 @@ func (c *Consumer) Start() chan *FlowRecord {
 										rec.DestAS = int(i)
 									}
 								case IPFIXFIeldFlowEndTimestamp:
+									rec.EndTime = int(dd.V.(float64))
 								case IPFIXFIeldFlowStartTimestamp:
-
+									rec.StartTime = int(dd.V.(float64))
 								}
 							}
 							rec.FlowID = buildFlowID(rec)

@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net"
+	"time"
 )
 
 type FlowRecord struct {
 	FlowID             FlowID
 	AgentID            string
+	ExportTime         time.Time
 	OctetDelta         uint64
 	PacketDelta        uint64
 	DeltaFlowCount     uint64
@@ -26,6 +28,9 @@ type FlowRecord struct {
 	NextHopAddress     net.IP
 	SourceAS           int
 	DestAS             int
+
+	StartTime int
+	EndTime   int
 }
 
 type FlowID string
